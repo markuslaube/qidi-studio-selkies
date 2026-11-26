@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /tmp/build
 
-RUN git clone --depth 1 "https://github.com" . && \
+RUN git clone --depth 1 "https://github.com/QIDITECH/QIDIStudio.git" . && \
     chmod +x BuildLinux.sh && \
     ./BuildLinux.sh -u && \
     ./BuildLinux.sh -d
