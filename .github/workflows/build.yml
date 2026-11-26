@@ -2,36 +2,55 @@ name: Build QIDI Studio Selkies ARM64
 
 on:
   workflow_dispatch:
+    inputs:
+      rebuild_deps:
+        description: 'Dependencies neu bauen (nur bei großen Updates nötig)'
+        required: false
+        default: false
+        type: boolean
   schedule:
     - cron: '0 3 1 * *'
 
 jobs:
-  build-arm64:
+  build-deps:
+    if: ${{ github.event_name == 'schedule' || inputs.rebuild_deps == true }}
     runs-on: ubuntu-24.04-arm
     permissions:
       contents: read
       packages: write
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
+      - uses: actions/checkout@v5
+      - uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v6
         with:
           context: .
+          file: Dockerfile.deps
           platforms: linux/arm64
           push: true
-          tags: ghcr.io/${{ github.repository }}:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          tags: ghcr.io/markuslaube/qidi-studio-selkies:deps-cache
+
+  build-app:
+    needs: build-deps
+    if: ${{ always() && (needs.build-deps.result == 'success' || needs.build-deps.result == 'skipped') }}
+    runs-on: ubuntu-24.04-arm
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          platforms: linux/arm64
+          push: true
+          tags: ghcr.io/markuslaube/qidi-studio-selkies:latest
