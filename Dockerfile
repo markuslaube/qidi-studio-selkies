@@ -2,18 +2,18 @@ FROM ghcr.io/markuslaube/qidi-studio-selkies:deps-cache
 
 WORKDIR /tmp/build
 
-RUN git checkout -- . && \
-    git pull --ff-only || true && \
-    find src/slic3r deps -maxdepth 3 && \
-    if [ -d "src/slic3r/qidi" ] && [ ! -e "src/slic3r/QIDI" ]; then ln -s qidi src/slic3r/QIDI; fi && \
+RUN git fetch --depth 1 origin main && \
+    git reset --hard origin/main && \
     find . -type f \( -name "CMakeLists.txt" -o -name "*.cmake" \) \
       -exec sed -i -e 's/linux-x64/linux-arm64/g' -e 's/pnpm-linux-x64/pnpm-linux-arm64/g' {} + && \
     sed -i -E 's/^[[:space:]]*EXPECTED_HASH/# EXPECTED_HASH/g' src/slic3r/GUI/DeviceWeb/CMakeLists.txt && \
-    if [ ! -f "deps/pgLibConnect/Lib/Ubuntu/x64/libconnect.a" ]; then \
-      mkdir -p deps/pgLibConnect/Lib/Ubuntu/x64 && \
-      echo "void _qidi_arm64_stub(void) {}" | gcc -x c -c - -o /tmp/stub.o && \
-      ar rcs deps/pgLibConnect/Lib/Ubuntu/x64/libconnect.a /tmp/stub.o; \
-    fi && \
+    python3 -c 'import os, re; p="src/slic3r/CMakeLists.txt"; txt=open(p, encoding="latin1").read(); \
+      fix=lambda m: m.group(0) if os.path.exists("src/slic3r/"+m.group(1)) else "# "+m.group(0); \
+      open(p,"w", encoding="latin1").write(re.sub(r"^[ \t]*([A-Za-z0-9_./-]+\.(?:cpp|hpp|c|h))\b.*$", fix, txt, flags=re.M))' && \
+    mkdir -p src/slic3r/QIDI deps/pgLibConnect/Lib/Ubuntu/x64 && \
+    touch src/slic3r/QIDI/QIDINetworkTypes.hpp && \
+    echo "void _qidi_arm64_stub(void) {}" | gcc -x c -c - -o /tmp/stub.o && \
+    ar rcs deps/pgLibConnect/Lib/Ubuntu/x64/libconnect.a /tmp/stub.o && \
     ./BuildLinux.sh -s && \
     mkdir -p /opt/qidi-studio && \
     if [ -d "build/package" ]; then \
