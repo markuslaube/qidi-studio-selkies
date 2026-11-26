@@ -1,6 +1,7 @@
 FROM ghcr.io/linuxserver/baseimage-selkies:ubunturesolute
 
 ENV TITLE="QIDI Studio"
+ENV CMAKE_POLICY_VERSION_MINIMUM="3.5"
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git ca-certificates sudo build-essential cmake ninja-build pkg-config \
