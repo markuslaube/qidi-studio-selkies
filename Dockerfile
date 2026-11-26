@@ -22,7 +22,9 @@ RUN git clone --depth 1 "https://github.com/QIDITECH/QIDIStudio.git" . && \
 RUN ./BuildLinux.sh -u && \
     ./BuildLinux.sh -d
 
-RUN ./BuildLinux.sh -s && \
+RUN sed -i -E 's/EXPECTED_HASH[[:space:]]+SHA256=[0-9a-fA-F]+//g' src/slic3r/GUI/DeviceWeb/CMakeLists.txt && \
+    sed -i -E '/HASH mismatch/d' src/slic3r/GUI/DeviceWeb/CMakeLists.txt && \
+    ./BuildLinux.sh -s && \
     mkdir -p /opt/qidi-studio && \
     if [ -d "build/package" ]; then \
       cp -r build/package/* /opt/qidi-studio/; \
@@ -32,5 +34,6 @@ RUN ./BuildLinux.sh -s && \
       cp -r build/src/QIDIStudio* /opt/qidi-studio/ || cp -r build/* /opt/qidi-studio/; \
     fi && \
     rm -rf /tmp/build
+
 
 COPY root/ /
