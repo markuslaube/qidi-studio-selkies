@@ -2,11 +2,10 @@ FROM ghcr.io/markuslaube/qidi-studio-selkies:deps-cache
 
 WORKDIR /tmp/build
 
-# 1. Submodule nachladen (holt src/slic3r/QIDI/ und deps/pgLibConnect/!) & Zustand bereinigen
 RUN git checkout -- . && \
     git pull --ff-only || true && \
-    git submodule update --init --recursive --depth 1 && \
-    ls -la src/slic3r/QIDI/ deps/pgLibConnect/Lib/Ubuntu/ || true && \
+    find src/slic3r deps -maxdepth 3 && \
+    if [ -d "src/slic3r/qidi" ] && [ ! -e "src/slic3r/QIDI" ]; then ln -s qidi src/slic3r/QIDI; fi && \
     find . -type f \( -name "CMakeLists.txt" -o -name "*.cmake" \) \
       -exec sed -i -e 's/linux-x64/linux-arm64/g' -e 's/pnpm-linux-x64/pnpm-linux-arm64/g' {} + && \
     sed -i -E 's/^[[:space:]]*EXPECTED_HASH/# EXPECTED_HASH/g' src/slic3r/GUI/DeviceWeb/CMakeLists.txt && \
