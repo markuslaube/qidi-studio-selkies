@@ -2,8 +2,10 @@ FROM ghcr.io/markuslaube/qidi-studio-selkies:deps-cache
 
 WORKDIR /tmp/build
 
-# 1. Direkt auf deinen eigenen Fork markuslaube/QIDIStudio wechseln
-RUN git remote set-url origin "https://github.com/markuslaube/QIDIStudio.git" && \
+ARG REPO_HOST=github.com
+ARG REPO_PATH=markuslaube/QIDIStudio.git
+
+RUN git remote set-url origin "https://${REPO_HOST}/${REPO_PATH}" && \
     git fetch --depth 1 origin main && \
     git reset --hard origin/main && \
     find . -type f \( -name "CMakeLists.txt" -o -name "*.cmake" \) \
@@ -15,7 +17,7 @@ RUN git remote set-url origin "https://github.com/markuslaube/QIDIStudio.git" &&
       open("/tmp/pg_stub.c","w").write("\n".join(f"int {f}(void) {{ return 0; }}" for f in sorted(funcs)) + "\nvoid _qidi_arm64_stub(void){}\n")' && \
     gcc -c /tmp/pg_stub.c -o /tmp/stub.o && \
     ar rcs deps/pgLibConnect/Lib/Ubuntu/x64/libconnect.a /tmp/stub.o && \
-    ( ./BuildLinux.sh -s > /tmp/build.log 2>&1 || (grep -n -C 3 "error:" /tmp/build.log | tail -n 80 && exit 1) ) && \
+    ( ./BuildLinux.sh -s > /tmp/build.log 2>&1 || (grep -i -n -C 5 "error\|failed" /tmp/build.log | tail -n 80; tail -n 30 /tmp/build.log; exit 1) ) && \
     mkdir -p /opt/qidi-studio && \
     if [ -d "build/package" ]; then \
       cp -r build/package/* /opt/qidi-studio/; \
