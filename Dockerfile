@@ -11,7 +11,10 @@ RUN git fetch --depth 1 origin main && \
       fix=lambda m: m.group(0) if os.path.exists("src/slic3r/"+m.group(1)) else "# "+m.group(0); \
       open(p,"w", encoding="latin1").write(re.sub(r"^[ \t]*([A-Za-z0-9_./-]+\.(?:cpp|hpp|c|h))\b.*$", fix, txt, flags=re.M))' && \
     mkdir -p src/slic3r/QIDI deps/pgLibConnect/Lib/Ubuntu/x64 && \
-    touch src/slic3r/QIDI/QIDINetworkTypes.hpp && \
+    grep -rn "QIDI/" src/ || true && \
+    sed -n '45,60p' src/slic3r/GUI/GUI_App.hpp || true && \
+    grep -rn "UserPresetSyncManager\|QIDINetwork" src/ || true && \
+    touch src/slic3r/QIDI/QIDINetworkTypes.hpp src/slic3r/QIDI/UserPresetSyncManager.hpp && \
     echo "void _qidi_arm64_stub(void) {}" | gcc -x c -c - -o /tmp/stub.o && \
     ar rcs deps/pgLibConnect/Lib/Ubuntu/x64/libconnect.a /tmp/stub.o && \
     ./BuildLinux.sh -s && \
