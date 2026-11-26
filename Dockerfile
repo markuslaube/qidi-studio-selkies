@@ -10,7 +10,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git ca-certificates sudo build-essential cmake ninja-build pkg-config \
     libgtk-3-dev libwebkit2gtk-4.1-dev libglu1-mesa-dev \
     libcurl4-openssl-dev libssl-dev libglew-dev libudev-dev \
-    nodejs npm \
     && rm -rf /var/lib/apt/lists/*
     
 WORKDIR /tmp/build
