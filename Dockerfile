@@ -3,7 +3,7 @@ FROM ghcr.io/markuslaube/qidi-studio-selkies:deps-cache
 WORKDIR /tmp/build
 
 # 1. Direkt auf deinen eigenen Fork markuslaube/QIDIStudio wechseln
-RUN git remote set-url origin "https://github.com" && \
+RUN git remote set-url origin "https://github.com/markuslaube/QIDIStudio.git" && \
     git fetch --depth 1 origin main && \
     git reset --hard origin/main && \
     find . -type f \( -name "CMakeLists.txt" -o -name "*.cmake" \) \
