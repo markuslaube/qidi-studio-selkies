@@ -7,7 +7,7 @@ ARG REPO_PATH=markuslaube/QIDIStudio.git
 
 RUN git remote set-url origin "https://${REPO_HOST}/${REPO_PATH}" && \
     git fetch --depth 1 origin arm64-main && \
-    git reset --hard origin/arm64-main && \
+    git reset --hard FETCH_HEAD && \
     python3 -c 'import glob, re; \
       funcs=set(); \
       [funcs.update(re.findall(r"\b(pg[A-Za-z0-9_]+)\s*\(", open(h, encoding="latin1").read())) for h in glob.glob("deps/pgLibConnect/Include/*.h")]; \
